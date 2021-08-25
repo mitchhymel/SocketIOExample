@@ -50,8 +50,6 @@ class _MyHomePageState extends State<MyHomePage> {
       'autoConnect': false,
     });
 
-    socket.connect();
-
     socket.on('connect', (obj) {
       print('client connect: $obj');
     });
@@ -61,6 +59,8 @@ class _MyHomePageState extends State<MyHomePage> {
     socket.on('global', (data) {
       print('global: $data');
     });
+
+    socket.connect();
   }
 
   @override
