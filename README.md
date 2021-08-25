@@ -4,7 +4,7 @@ Example project including a server and client to create a real time communicatio
 
 
 # server
-yarn start
+dart server.dart
 
 
 # client
