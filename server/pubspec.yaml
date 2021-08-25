@@ -1,9 +1,12 @@
 name: server
 description: Server
 version: 0.0.1
+publish_to: 'none'
 
 environment:
   sdk: '>=2.10.0 <3.0.0'
 
 dependencies:
   socket_io: 
+  shared:
+    path: ../shared/

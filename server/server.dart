@@ -1,39 +1,38 @@
+import 'package:shared/shared.dart';
 import 'package:socket_io/socket_io.dart';
 
-List<dynamic> clients = [];
+List<Socket> clients = [];
+const int port = 3000;
 
 main() {
     var io = new Server();
-    // var nsp = io.of('/some');
-    // nsp.on('connection', (client) {
-    //   print('connection /some');
-    //   client.on('msg', (data) {
-    //     print('data from /some => $data');
-    //     client.emit('fromServer', "ok 2");
-    //   });
-    // });
     
-    io.on('connect', (client) {
+    io.on(Messages.CONNECT.toString(), (client) {
       
-      print('client connected: ${client.id}');
-      clients.add(client);
+      Socket socket = client as Socket;
+      print('New Client Connected: ${socket.id}');
       
-      client.emit('event', 'connected');
+      socket.on(Messages.CREATE_ROOM.toString(), (data) {
+        print('${socket.id}: createRoom => $data');
+        // generate random string for roomid
+        String newId = 'ABCDE';
 
-      client.on('custom', (data) {
-        print('data from default => $data');
-        client.emit('event', "ok");
+        var message = CreatedRoomMessage(newId);
+        socket.emit(Messages.CREATED_ROOM.toString(), message);
       });
 
-      client.on('global', (data) {
-        for (var cl in clients) {
-          cl.emit('global', data);
-        }
+      socket.on(Messages.JOIN_ROOM.toString(), (data) {
+        print('${socket.id}: joinRoom => $data');
+        var joinRoomMessage = JoinRoomMessage.fromJson(data);
+
+        socket.join(joinRoomMessage.id);
+        socket.emit(Messages.JOINED_ROOM.toString(), joinRoomMessage.toJson());
       });
 
-      print('client listeners set up');
+      
+      clients.add(socket);
     });
 
-    print('Listening on port 3000');
-    io.listen(3000);
+    print('Listening on port $port');
+    io.listen(port);
 }
