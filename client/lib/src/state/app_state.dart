@@ -32,8 +32,6 @@ class AppState extends ChangeNotifier {
     // set up listeners;
     socket.on(Messages.CONNECT.toString(), _onConnect);
     socket.on(Messages.EVENT.toString(), _onEvent);
-    socket.on(Messages.CREATED_ROOM.toString(), _onCreatedRoom);
-    socket.on(Messages.JOINED_ROOM.toString(), _onJoinedRoom);
   }
 
 
@@ -49,13 +47,22 @@ class AppState extends ChangeNotifier {
   }
 
   void createRoom() {
-    socket.emit(Messages.CREATE_ROOM.toString());
+    log('createRoom');
+    socket.emitWithAck(Messages.CREATE_ROOM.toString(), {}, ack: (ack) {
+      var createdRoomMessage = CreatedRoomMessage.fromJson(ack);
+      log('CreatedRoom: ${createdRoomMessage.toJson()}');
+      _updateRoomid(createdRoomMessage.id);
+    });
   }
 
   void joinRoom(String id) {
     var message = JoinRoomMessage(id);
     log('joinRoom: ${message.toJson()}');
-    socket.emit(Messages.JOIN_ROOM.toString(), message.toJson());
+    socket.emitWithAck(Messages.JOIN_ROOM.toString(), message.toJson(), ack: (ack) {
+      var createdRoomMessage = CreatedRoomMessage.fromJson(ack);
+      log('JoinedRoom: ${createdRoomMessage.toJson()}');
+      _updateRoomid(createdRoomMessage.id);
+    });
   }
 
   void leaveRoom() {
@@ -70,18 +77,6 @@ class AppState extends ChangeNotifier {
 
  void  _onEvent(msg) {
     log('Event: $msg');
-  }
-
-  void _onCreatedRoom(msg) {
-    var createdRoomMessage = CreatedRoomMessage.fromJson(msg);
-    log('CreatedRoom: ${createdRoomMessage.toJson()}');
-    _updateRoomid(createdRoomMessage.id);
-  }
-
-  void _onJoinedRoom(msg) {
-    var createdRoomMessage = CreatedRoomMessage.fromJson(msg);
-    log('JoinedRoom: ${createdRoomMessage.toJson()}');
-    _updateRoomid(createdRoomMessage.id);
   }
 
 }
